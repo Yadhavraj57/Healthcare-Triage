@@ -26,12 +26,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+allowed_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",") if o.strip()]
+allow_all = "*" in allowed_origins
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # lock this down to specific origins in production
-    allow_credentials=False,      # must be False when allow_origins=["*"]
+    allow_origins=["*"] if allow_all else allowed_origins,
+    allow_credentials=not allow_all,   # credentials can't be combined with "*"
     allow_methods=["*"],
     allow_headers=["*"],
 )
